@@ -4,11 +4,13 @@ from datetime import date
 
 
 class CreditCard:
-    def __init__(self, name, interest_rate, loan, payment, new_charges) -> None:
+    def __init__(self, name: str, interest_rate: float, loan: float, payment: float, new_charges: float) -> None:
         self.name = name
         self.__card_number = self.__create_card_number()
         self.__expiration_date = self.__create_expiration_date()
         self.__cvv = self.__create_cvv()
+        self.__type = "Crédito"
+
         self.interest_rate = float(interest_rate)
         self.loan = float(loan)
         if payment > loan:
@@ -16,7 +18,7 @@ class CreditCard:
         else:
             self.payment = float(payment)
         self.new_charges = float(new_charges)
-        self.new_loan = 0.0
+        self.new_loan = self.__calculate_new_loan()
 
     def __create_card_number(self) -> str:
         """Creates a card number based on random numbers
@@ -75,6 +77,39 @@ class CreditCard:
         """
         return self.__card_number
 
+    def get_expiration_date(self) -> str:
+        """Return expiration date
+
+        Args:
+          None
+
+        Returns:
+          str: Expiration date in format mm/yy.
+        """
+        return self.__expiration_date
+
+    def get_cvv(self) -> str:
+        """Return card's cvv
+
+        Args:
+          None
+
+        Returns:
+          str: Card's cvv.
+        """
+        return self.__cvv
+
+    def get_type(self) -> str:
+        """Return type of card
+
+        Args:
+          None
+
+        Returns:
+          str: Type of card (CREDIT OR SERVICE).
+        """
+        return self.__type
+
     def create_card_dict(self) -> dict:
         """Creates a card based on class constructor
 
@@ -90,6 +125,7 @@ class CreditCard:
             "card_number": self.__card_number,
             "expiration_date": self.__expiration_date,
             "cvv": self.__cvv,
+            "type": self.__type,
             "interest_rate": self.interest_rate,
             "loan": self.loan,
             "payment": self.payment,
@@ -97,20 +133,23 @@ class CreditCard:
             "new_loan": self.new_loan
         }
 
-    def calculate_new_loan(self) -> None:
+    def __calculate_new_loan(self) -> float:
         """Calculates new loan of a card based on its current info
 
         Args:
           self: Constructor values
 
         Returns:
-          None
+          float: Calculated new loan
         """
         monthly_interest = self.interest_rate / 12
         recalculated_loan = (self.loan - self.payment
                              ) * (1 + monthly_interest)
         new_loan = recalculated_loan + self.new_charges
-        self.new_loan = new_loan
+
+        self.loan = 0
+        self.new_charges = 0
+        return new_loan
 
     def make_report(self) -> None:
         """Prints the information of a card
@@ -122,19 +161,18 @@ class CreditCard:
           None
         """
 
+        print(
+            f'\n- - - REPORTE TARJETA CON TERMINACION {self.__card_number[-4:]} - - -')
         print(f"Nombre del titular: {self.name}")
         print(f"Número de tarjeta: {self.__card_number}")
         print(f"Fecha de vencimiento: {self.__expiration_date}")
         print(f"CVV: {self.__cvv}")
+        print(f"Tipo: {self.__type}")
         print(f"Tasa de interés: {self.interest_rate}%")
-        print(f"Deuda actual: {self.format_currency(self.loan)}")
-        print(f"Pago realizado: {self.format_currency(self.payment)}")
-        print(f"Cargos nuevos: {self.format_currency(self.new_charges)}")
+        print(f"Pago mensual: {self.format_currency(self.payment)}")
+        print(
+            f"Deuda actual: {self.format_currency(self.new_loan)}")
 
-        if self.new_loan > 0:
-            print("\nDEUDA ACTUALIZADA")
-            print(
-                f"Próximo pago mensual: {self.format_currency(self.new_loan)}")
         print("\n\n")
 
     def format_currency(self, money: float) -> str:
@@ -148,6 +186,25 @@ class CreditCard:
         """
         return "${:,.2f}".format(money)
 
+    def update(self) -> None:
+        """Updates loan, payment, new charges and new loan information
+
+        Args:
+          self: Card information
+
+        Returns:
+          None
+        """
+        self.loan = self.new_loan
+        payment = float(input("Ingresa tu pago mensual: $"))
+        if payment > self.loan:
+            self.payment = float(self.loan)
+        else:
+            self.payment = float(payment)
+        self.new_charges = float(input("Ingresa los cargos adicionales: $"))
+        self.new_loan = self.__calculate_new_loan()
+        self.make_report()
+
     def recurrent_payment(self) -> dict:
         """Pays the total loan based on the payment amount and displays for long will it take to pay it.
         Updates loan, payment, new charges and new loan to value of zero. 
@@ -159,11 +216,7 @@ class CreditCard:
           None
         """
         payment = self.payment
-
-        if self.new_loan > 0:
-            current_loan = self.new_loan
-        else:
-            current_loan = self.loan
+        current_loan = self.new_loan
 
         counter = 1
 
@@ -180,11 +233,34 @@ class CreditCard:
                 counter += 1
             else:
                 print(f'Pago {counter} de {number_of_payments}')
-                print(f'Deuda actual: {self.format_currency(current_loan)}\n')
-                print(f'Último pago de {self.format_currency(current_loan)}')
+                print(f'Deuda actual: {self.format_currency(current_loan)}')
+                print(
+                    f'Pago: {self.format_currency(current_loan)} - {self.format_currency(payment)}')
+                print(
+                    f'Deuda actualizada: {self.format_currency(current_loan - current_loan)}\n')
             current_loan -= payment
 
-        self.loan = 0
         self.payment = 0
-        self.new_charges = 0
         self.new_loan = 0
+
+    def partial_payment(self) -> None:
+        current_loan = self.new_loan
+
+        print(
+            f'\n- - - PAGO PARCIAL DE LA TARJETA CON TERMINACION {self.__card_number[-4:]} - - -')
+        print(f'Deuda actual: {self.format_currency(current_loan)}')
+
+        invalid = True
+
+        while invalid:
+            payment = float(input("Ingresa el monto a pagar: $"))
+            if float(payment) > float(current_loan):
+                print("Tu pago no puede ser mayor a tu deuda actual\n")
+            else:
+                invalid = False
+
+        if self.new_loan - payment < self.payment:
+            self.payment = self.new_loan - payment
+        self.new_loan -= payment
+
+        print(f'Deuda actualizada: {self.format_currency(self.new_loan)}\n')
