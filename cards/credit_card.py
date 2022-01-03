@@ -110,6 +110,43 @@ class CreditCard:
         """
         return self.__type
 
+    def __calculate_new_loan(self) -> float:
+        """Calculates new loan of a card based on its current info
+
+        Args:
+          self: Constructor values
+
+        Returns:
+          float: Calculated new loan
+        """
+        monthly_interest = self.interest_rate / 12
+        recalculated_loan = (self.loan - self.payment
+                             ) * (1 + monthly_interest)
+        new_loan = recalculated_loan + self.new_charges
+
+        self.loan = 0
+        self.new_charges = 0
+        return new_loan
+
+    def update(self) -> None:
+        """Updates loan, payment, new charges and new loan information
+
+        Args:
+          self: Card information
+
+        Returns:
+          None
+        """
+        self.loan = self.new_loan
+        payment = float(input("Ingresa tu pago mensual: $"))
+        if payment > self.loan:
+            self.payment = float(self.loan)
+        else:
+            self.payment = float(payment)
+        self.new_charges = float(input("Ingresa los cargos adicionales: $"))
+        self.new_loan = self.__calculate_new_loan()
+        self.make_report()
+
     def create_card_dict(self) -> dict:
         """Creates a card based on class constructor
 
@@ -132,24 +169,6 @@ class CreditCard:
             "new_charges": self.new_charges,
             "new_loan": self.new_loan
         }
-
-    def __calculate_new_loan(self) -> float:
-        """Calculates new loan of a card based on its current info
-
-        Args:
-          self: Constructor values
-
-        Returns:
-          float: Calculated new loan
-        """
-        monthly_interest = self.interest_rate / 12
-        recalculated_loan = (self.loan - self.payment
-                             ) * (1 + monthly_interest)
-        new_loan = recalculated_loan + self.new_charges
-
-        self.loan = 0
-        self.new_charges = 0
-        return new_loan
 
     def make_report(self) -> None:
         """Prints the information of a card
@@ -174,36 +193,6 @@ class CreditCard:
             f"Deuda actual: {self.format_currency(self.new_loan)}")
 
         print("\n\n")
-
-    def format_currency(self, money: float) -> str:
-        """Formats a float into a string with a currency format
-
-        Args:
-          float: Money in floating format
-
-        Returns:
-          str: Money in string formatted into a currency
-        """
-        return "${:,.2f}".format(money)
-
-    def update(self) -> None:
-        """Updates loan, payment, new charges and new loan information
-
-        Args:
-          self: Card information
-
-        Returns:
-          None
-        """
-        self.loan = self.new_loan
-        payment = float(input("Ingresa tu pago mensual: $"))
-        if payment > self.loan:
-            self.payment = float(self.loan)
-        else:
-            self.payment = float(payment)
-        self.new_charges = float(input("Ingresa los cargos adicionales: $"))
-        self.new_loan = self.__calculate_new_loan()
-        self.make_report()
 
     def recurrent_payment(self) -> dict:
         """Pays the total loan based on the payment amount and displays for long will it take to pay it.
@@ -264,3 +253,16 @@ class CreditCard:
         self.new_loan -= payment
 
         print(f'Deuda actualizada: {self.format_currency(self.new_loan)}\n')
+
+    def format_currency(self, money: float) -> str:
+        """Formats a float into a string with a currency format
+
+        Args:
+          float: Money in floating format
+
+        Returns:
+          str: Money in string formatted into a currency
+        """
+        return "${:,.2f}".format(money)
+
+

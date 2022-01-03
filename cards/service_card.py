@@ -61,3 +61,37 @@ class ServiceCard(CreditCard):
         print(f"Tipo: {self.__type}")
         print(f"Deuda actual: {self.format_currency(self.loan)}")
         print("\n\n")
+
+    def pay(self):
+        invalid = True
+
+        print(
+            f'\n- - - PAGO TOTAL DE LA TARJETA CON TERMINACION {self.__card_number[-4:]} - - -')
+        print(f'Deuda actual: {self.format_currency(self.loan)}')
+        while invalid:
+            payment = float(
+                input("Ingresa la cantidad a pagar (Solo se aceptan pagos totales): $"))
+            if payment < self.loan:
+                print("Solo se aceptan pagos totales\n")
+            elif payment > self.loan:
+                print("Tu pago excede la deuda, intenta de nuevo \n")
+            else:
+                invalid = False
+        self.loan = 0.0
+        print("\n")
+        self.make_report()
+
+    def accept_only_total_payments(func):
+        def wrapper(*args, **kwargs):
+            print("Solo se pueden realizar pagos totales")
+            return
+            func(*args, **kwargs)
+        return wrapper
+
+    @accept_only_total_payments
+    def recurrent_payment(self) -> dict:
+        return super().recurrent_payment()
+
+    @accept_only_total_payments
+    def partial_payment(self) -> None:
+        return super().partial_payment()
