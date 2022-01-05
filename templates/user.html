@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User</title>
+</head>
+
+<body>
+  <section>
+    {% if credit|length > 0 %}
+    {% for card in credit %}
+    <a href="/credit-card/{{card[4]}}">{{card}}</a>
+    {% endfor %}
+    {% endif %}
+  </section>
+  <section>
+    {% if service|length > 0 %}
+    {% for card in service %}
+    <a href="/service-card/{{card[4]}}">{{card}}</a>
+    {% endfor %}
+    {% endif %}
+  </section>
+  <section class="buttons">
+    <a href="/user/{{user[0]}}/add-credit-card" class="add-credit-card">Nueva tarjeta de crédito</a>
+    <a href="/user/{{user[0]}}/add-service-card" class="add-service-card">Nueva tarjeta de servicios</a>
+  </section>
+</body>
+
+</html>
