@@ -1,25 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'utils/layout.html' %} {% block body %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add card</title>
-</head>
+<form action="/add-service-card" method="POST">
+  <input value="{{user[0]}}" name="user_id" readonly hidden></option>
 
-<body>
-  <form action="/add-service-card" method="POST">
-    <input value="{{user[0]}}" name="user_id" readonly hidden></option>
+  <label>Usuario</label>
+  <input type="text" readonly placeholder="{{user[1]}} {{user[2]}}">
 
-    <label>Usuario</label>
-    <input type="text" readonly placeholder="{{user[1]}} {{user[2]}}">
+  <label for="loan">Deuda</label>
+  <input type="number" name="loan" id="loan">
 
-    <label for="loan">Deuda</label>
-    <input type="number" name="loan" id="loan">
+  <button type="submit">Crear</button>
+</form>
 
-    <button type="submit">Crear</button>
-  </form>
-</body>
-
-</html>
+{% endblock %}

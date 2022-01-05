@@ -1,36 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'utils/layout.html' %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add card</title>
-</head>
+{% block body %}
 
-<body>
+<form action="/add-credit-card" method="POST">
 
-  <form action="/add-credit-card" method="POST">
+  <input value="{{user[0]}}" name="user_id" readonly hidden></option>
 
-    <input value="{{user[0]}}" name="user_id" readonly hidden></option>
+  <label>Usuario</label>
+  <input type="text" readonly placeholder="{{user[1]}} {{user[2]}}">
 
-    <label>Usuario</label>
-    <input type="text" readonly placeholder="{{user[1]}} {{user[2]}}">
+  <label for="interest_rate">Tasa de interés</label>
+  <input type="number" step="0.01" name="interest_rate" id="interest_rate">
 
-    <label for="interest_rate">Tasa de interés</label>
-    <input type="number" step="0.01" name="interest_rate" id="interest_rate">
+  <label for="loan">Deuda</label>
+  <input type="number" name="loan" id="loan">
 
-    <label for="loan">Deuda</label>
-    <input type="number" name="loan" id="loan">
+  <label for="payment">Pago mensual</label>
+  <input type="number" name="payment" id="payment">
 
-    <label for="payment">Pago mensual</label>
-    <input type="number" name="payment" id="payment">
+  <label for="new_charges">Cargos adicionales</label>
+  <input type="number" name="new_charges" id="new_charges">
 
-    <label for="new_charges">Cargos adicionales</label>
-    <input type="number" name="new_charges" id="new_charges">
-
-    <button type="submit">Crear</button>
-  </form>
-</body>
-
-</html>
+  <button type="submit">Crear</button>
+</form>
+{% endblock %}

@@ -21,16 +21,19 @@ mysql = MySQL(app)
 @app.route('/')
 def index():
     cursor = mysql.connection.cursor()
-    # cursor.execute('SELECT * FROM users')
     cursor.execute('SELECT * FROM users')
     data = cursor.fetchall()
-    return render_template('index.html', users=data)
+    return render_template('index.html', users=data, title="Home")
 
 
 @app.route('/user/<user_id>/add-credit-card')
 def add_card_get(user_id):
     user = query_user(user_id)
-    return render_template('add-credit-card.html', user=user[0])
+    return render_template(
+        'add-credit-card.html',
+        user=user[0],
+        title="Add Credit Card"
+    )
 
 
 @app.route('/add-credit-card', methods=['POST'])
@@ -66,7 +69,11 @@ def add_card_post():
 @app.route('/user/<user_id>/add-service-card')
 def add_service_card_get(user_id):
     user = query_user(user_id)
-    return render_template('add-service-card.html', user=user[0])
+    return render_template(
+        'add-service-card.html',
+        user=user[0],
+        title="Add Service Card"
+    )
 
 
 @app.route('/add-service-card', methods=['POST'])
@@ -97,7 +104,7 @@ def add_service_card_post():
 
 @app.route('/add-user')
 def add_user_get():
-    return render_template('add-user.html')
+    return render_template('add-user.html', title="Add New User")
 
 
 @app.route('/add-user', methods=['POST'])
@@ -114,8 +121,12 @@ def add_user_post():
 
 @app.route('/user/<id>')
 def user_info(id):
-    user = query_user(id)
 
+    # FETCH USER
+    user = query_user(id)
+    fullname = f'{user[0][1]} {user[0][2]}'
+
+    # FETCH CREDIT CARD DATA
     cursor = mysql.connection.cursor()
     cursor.execute(f"""
       SELECT users.user_id, credit_cards.card_id, users.firstname, users.lastname, credit_cards.card_number, credit_cards.expiration_date
@@ -124,8 +135,8 @@ def user_info(id):
       WHERE users.user_id={id}
     """)
     credit_card_data = cursor.fetchall()
-    print(len(credit_card_data))
 
+    # FETCH sERVICE CARD DATA
     cursor.execute(f"""
       SELECT users.user_id, service_cards.card_id, users.firstname, users.lastname, service_cards.card_number, service_cards.expiration_date
       FROM service_cards 
@@ -134,7 +145,13 @@ def user_info(id):
     """)
     service_card_data = cursor.fetchall()
 
-    return render_template('user.html', user=user[0], credit=credit_card_data, service=service_card_data)
+    return render_template(
+        'user.html',
+        user=user[0],
+        credit=credit_card_data,
+        service=service_card_data,
+        title=fullname
+    )
 
 
 @app.route('/credit-card/<card_number>')
@@ -143,7 +160,7 @@ def credit_card_info(card_number):
     cursor.execute(
         f'SELECT * FROM credit_cards WHERE card_number = {card_number}')
     data = cursor.fetchall()
-    return render_template('credit-card-info.html', card=data[0])
+    return render_template('credit-card-info.html', card=data[0], title="Credit Card Info")
 
 
 @app.route('/service-card/<card_number>')
@@ -152,13 +169,21 @@ def service_card_info(card_number):
     cursor.execute(
         f'SELECT * FROM service_cards WHERE card_number = {card_number}')
     data = cursor.fetchall()
-    return render_template('service-card-info.html', card=data[0])
+    return render_template('service-card-info.html', card=data[0], title="Service Card Info")
 
 
-@app.route('/delete-card/<id>')
-def delete_card(id):
+@app.route('/delete/credit-card/<id>')
+def delete_credit_card(id):
     cursor = mysql.connection.cursor()
     cursor.execute(f'DELETE FROM credit_cards WHERE card_id = {id}')
+    mysql.connection.commit()
+    return redirect(url_for('index'))
+
+
+@app.route('/delete/service-card/<id>')
+def delete_service_card(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute(f'DELETE FROM service_cards WHERE card_id = {id}')
     mysql.connection.commit()
     return redirect(url_for('index'))
 
