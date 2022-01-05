@@ -1,21 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'utils/layout.html' %} {% block body %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add User</title>
-</head>
-
-<body>
-  <form action="/add-user" method="POST">
-    <label for="firstname">Nombre</label>
-    <input type="text" name="firstname" id="firstname">
-    <label for="lastname">Apellido</label>
-    <input type="text" name="lastname" id="lastname">
-    <button type="submit">Crear</button>
+<section class="add-user">
+  <form action="/add-user" method="POST" class="add-user__form">
+    <div class="input__container">
+      <label for="firstname">Nombre</label>
+      <input type="text" name="firstname" id="firstname" required />
+    </div>
+    <div class="input__container">
+      <label for="lastname">Apellido</label>
+      <input type="text" name="lastname" id="lastname" required />
+    </div>
+    <button type="submit" class="primary">Crear</button>
   </form>
-</body>
+</section>
 
-</html>
+{% endblock %}

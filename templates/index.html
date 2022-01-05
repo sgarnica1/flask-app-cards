@@ -1,24 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'utils/layout.html' %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Flask App Cards</title>
-</head>
+{% block body %}
 
-<body>
+<main class="index">
   <section class="users">
-    <h1 class="users__title">Users</h1>
-    {% if users|length > 0 %} {% for user in users %}
-    <article class="user">
-      <a href="/user/{{user[0]}}" class="user__">{{user[1]}} {{user[2]}}</a>
-      {% endfor %} {% endif %}
+    {% if users|length > 0 %}
+    <section class="users__list">
+      {% for user in users %}
+      <a href="/user/{{user[0]}}" class="user-card">
+        <span class="user-card__icon"></span>
+        <div class="user-card__info">
+          <p class="user-card__name">{{user[1]}} {{user[2]}}</p>
+          <div class="user-card__status">
+            <span></span>
+            <p>User status</p>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </section>
+    {% endif %}
+    <section class="users_utils">
+      <a href="/add-user" class="add-user-btn">+</a>
+    </section>
   </section>
-  <section class="add-buttons">
-    <a href="/add-user" class="add-user">Nuevo usuario</a>
-  </section>
-</body>
+</main>
 
-</html>
+{% endblock %}
