@@ -1,20 +1,11 @@
-import os
 from cards.service_card import ServiceCard
 from cards.credit_card import CreditCard
 from flask import Flask, render_template, request, redirect, url_for
 from flask_mysqldb import MySQL
-from dotenv import load_dotenv
-load_dotenv()
 
 app = Flask(__name__)
+app.config.from_object('config')
 
-# SESSION SETTINGS
-app.secret_key = os.environ.get('MYSECRETKEY')
-
-# MYSQL CONNECTION
-app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST')
-app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER')
-app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB')
 mysql = MySQL(app)
 
 
@@ -23,7 +14,7 @@ def index():
     cursor = mysql.connection.cursor()
     cursor.execute('SELECT * FROM users')
     data = cursor.fetchall()
-    return render_template('index.html', users=data, title="Home")
+    return render_template('index.html', users=data, title="Users")
 
 
 @app.route('/user/<user_id>/add-credit-card')
@@ -124,13 +115,13 @@ def user_info(id):
 
     # FETCH USER
     user = query_user(id)
-    fullname = f'{user[0][1]} {user[0][2]}'
+    firstname = user[0][1]
 
     # FETCH CREDIT CARD DATA
     cursor = mysql.connection.cursor()
     cursor.execute(f"""
       SELECT users.user_id, credit_cards.card_id, users.firstname, users.lastname, credit_cards.card_number, credit_cards.expiration_date
-      FROM credit_cards 
+      FROM credit_cards
       INNER JOIN users ON users.user_id = credit_cards.user_id
       WHERE users.user_id={id}
     """)
@@ -139,7 +130,7 @@ def user_info(id):
     # FETCH sERVICE CARD DATA
     cursor.execute(f"""
       SELECT users.user_id, service_cards.card_id, users.firstname, users.lastname, service_cards.card_number, service_cards.expiration_date
-      FROM service_cards 
+      FROM service_cards
       INNER JOIN users ON users.user_id = service_cards.user_id
       WHERE users.user_id={id}
     """)
@@ -150,11 +141,11 @@ def user_info(id):
         user=user[0],
         credit=credit_card_data,
         service=service_card_data,
-        title=fullname
+        title=firstname
     )
 
 
-@app.route('/credit-card/<card_number>')
+@ app.route('/credit-card/<card_number>')
 def credit_card_info(card_number):
     cursor = mysql.connection.cursor()
     cursor.execute(
@@ -163,7 +154,7 @@ def credit_card_info(card_number):
     return render_template('credit-card-info.html', card=data[0], title="Credit Card Info")
 
 
-@app.route('/service-card/<card_number>')
+@ app.route('/service-card/<card_number>')
 def service_card_info(card_number):
     cursor = mysql.connection.cursor()
     cursor.execute(
@@ -172,7 +163,7 @@ def service_card_info(card_number):
     return render_template('service-card-info.html', card=data[0], title="Service Card Info")
 
 
-@app.route('/delete/credit-card/<id>')
+@ app.route('/delete/credit-card/<id>')
 def delete_credit_card(id):
     cursor = mysql.connection.cursor()
     cursor.execute(f'DELETE FROM credit_cards WHERE card_id = {id}')
@@ -180,7 +171,7 @@ def delete_credit_card(id):
     return redirect(url_for('index'))
 
 
-@app.route('/delete/service-card/<id>')
+@ app.route('/delete/service-card/<id>')
 def delete_service_card(id):
     cursor = mysql.connection.cursor()
     cursor.execute(f'DELETE FROM service_cards WHERE card_id = {id}')

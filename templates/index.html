@@ -2,15 +2,28 @@
 
 {% block body %}
 
-<section class="users">
-  <h1 class="users__title">Users</h1>
-  {% if users|length > 0 %} {% for user in users %}
-  <article class="user">
-    <a href="/user/{{user[0]}}" class="user__">{{user[1]}} {{user[2]}}</a>
-    {% endfor %} {% endif %}
-</section>
-<section class="add-buttons">
-  <a href="/add-user" class="add-user">Nuevo usuario</a>
-</section>
+<main class="index">
+  <section class="users">
+    {% if users|length > 0 %}
+    <section class="users__list">
+      {% for user in users %}
+      <a href="/user/{{user[0]}}" class="user-card">
+        <span class="user-card__icon"></span>
+        <div class="user-card__info">
+          <p class="user-card__name">{{user[1]}} {{user[2]}}</p>
+          <div class="user-card__status">
+            <span></span>
+            <p>User status</p>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </section>
+    {% endif %}
+    <section class="users_utils">
+      <a href="/add-user" class="add-user-btn">+</a>
+    </section>
+  </section>
+</main>
 
 {% endblock %}
