@@ -6,11 +6,11 @@ class ServiceCard(CreditCard):
     def __init__(self, name, loan) -> None:
         super().__init__(name=name, interest_rate=0,
                          loan=loan, payment=0, new_charges=0)
-        self.__card_number = self.__create_card_number()
-        self.__type = "Servicios"
+        self.card_number = self.create_card_number()
+        self.type = "servicios"
         self.loan = loan
 
-    def __create_card_number(self) -> str:
+    def create_card_number(self) -> str:
         """Creates a card number based on random numbers
 
         Args:
@@ -39,7 +39,7 @@ class ServiceCard(CreditCard):
             "card_number": self.get_card_number(),
             "expiration_date": self.get_expiration_date(),
             "cvv": self.get_cvv(),
-            "type": self.__type,
+            "type": self.type,
             "loan": self.loan,
             "payment": self.payment,
         }
@@ -55,10 +55,10 @@ class ServiceCard(CreditCard):
         """
 
         print(f"Nombre del titular: {self.name}")
-        print(f"Número de tarjeta: {self.__card_number}")
+        print(f"Número de tarjeta: {self.card_number}")
         print(f"Fecha de vencimiento: {self.get_expiration_date()}")
         print(f"CVV: {self.get_cvv()}")
-        print(f"Tipo: {self.__type}")
+        print(f"Tipo: {self.type}")
         print(f"Deuda actual: {self.format_currency(self.loan)}")
         print("\n\n")
 
@@ -66,7 +66,7 @@ class ServiceCard(CreditCard):
         invalid = True
 
         print(
-            f'\n- - - PAGO TOTAL DE LA TARJETA CON TERMINACION {self.__card_number[-4:]} - - -')
+            f'\n- - - PAGO TOTAL DE LA TARJETA CON TERMINACION {self.card_number[-4:]} - - -')
         print(f'Deuda actual: {self.format_currency(self.loan)}')
         while invalid:
             payment = float(
