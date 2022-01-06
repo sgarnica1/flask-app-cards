@@ -1,7 +1,7 @@
 import math
 import random
 import json
-from datetime import date
+from datetime import date, datetime
 
 
 class CreditCard:
@@ -10,7 +10,7 @@ class CreditCard:
         self.card_number = self.create_card_number()
         self.expiration_date = self.create_expiration_date()
         self.cvv = self.create_cvv()
-        self.type = "credito"
+        self.type = "credit"
 
         self.interest_rate = float(interest_rate)
         self.loan = float(loan)
@@ -42,16 +42,16 @@ class CreditCard:
           None
 
         Returns:
-          str: Card's expiration date in the following format mm/yy
+          str: Card's expiration date in timestamp format for MySQL
         """
-        cdate = date.today()
-        cdate = str(cdate).split("-")
+        now = datetime.now()
+        year = int(now.strftime('%Y'))
 
-        # Get year and month from current date. Add 5 years to the year variable
-        year = str(int(cdate[0]) + 5)
-        month = cdate[1]
+        # Add 5 years to the current year
+        year += 5
+        formatted_date = now.strftime(f'{year}-%m-%d %H:%M:%S')
 
-        return f"{month}/{year[2:4]}"
+        return formatted_date
 
     def create_cvv(self) -> str:
         """Creates card's cvv based on 3 random numbers

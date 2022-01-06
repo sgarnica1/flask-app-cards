@@ -7,7 +7,7 @@ class ServiceCard(CreditCard):
         super().__init__(name=name, interest_rate=0,
                          loan=loan, payment=0, new_charges=0)
         self.card_number = self.create_card_number()
-        self.type = "servicios"
+        self.type = "service"
         self.loan = loan
 
     def create_card_number(self) -> str:
