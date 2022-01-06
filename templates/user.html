@@ -1,22 +1,22 @@
 {% extends 'utils/layout.html' %} {% block body %}
 
-<section>
-  {% if credit|length > 0 %} {% for card in credit %}
-  <a href="/credit-card/{{card[4]}}">{{card}}</a>
-  {% endfor %} {% endif %}
-</section>
-<section>
-  {% if service|length > 0 %} {% for card in service %}
-  <a href="/service-card/{{card[4]}}">{{card}}</a>
-  {% endfor %} {% endif %}
-</section>
-<section class="buttons">
-  <a href="/user/{{user[0]}}/add-credit-card" class="add-credit-card"
-    >Nueva tarjeta de crédito</a
-  >
-  <a href="/user/{{user[0]}}/add-service-card" class="add-service-card"
-    >Nueva tarjeta de servicios</a
-  >
+<section class="user-profile">
+  <section class="user-profile__cards">
+    {% if cards|length > 0 %}
+    <div class="user-profile__cards-container">
+      {% for card in cards %}
+      {% include 'utils/card.html' %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="user-profile__add-buttons">
+    <a href="/user/{{user['user_id']}}/add-credit-card" class="add-card credit button-primary">Nueva tarjeta de
+      crédito</a>
+    <a href="/user/{{user['user_id']}}/add-service-card" class="add-card service button-primary">Nueva tarjeta de
+      servicios</a>
+  </section>
 </section>
 
 {% endblock %}
