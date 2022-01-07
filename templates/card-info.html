@@ -1,6 +1,6 @@
 {% extends 'utils/layout.html' %} {% block body %}
 
 <p>{{card}}</p>
-<a href="/delete/credit-card/{{card[0]}}">Delete card</a>
+<a href="/delete/{{card['type']}}-card/{{card['card_id']}}">Delete card</a>
 
 {% endblock %}

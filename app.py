@@ -2,7 +2,6 @@ from cards.service_card import ServiceCard
 from cards.credit_card import CreditCard
 from flask import Flask, render_template, request, redirect, url_for
 from flask_mysqldb import MySQL
-from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -10,109 +9,16 @@ app.config.from_object('config')
 mysql = MySQL(app)
 
 
-@app.route('/')
-def index():
+@app.route('/', methods=['GET'])
+def index_get():
     cursor = mysql.connection.cursor()
     cursor.execute('SELECT * FROM users')
     data = cursor.fetchall()
     return render_template('index.html', users=data, title="Users")
 
 
-@app.route('/user/<user_id>/add-credit-card')
-def add_card_get(user_id):
-    user = query_user(user_id)
-    return render_template(
-        'add-credit-card.html',
-        user=user[0],
-        title="Add Credit Card"
-    )
-
-
-@app.route('/add-credit-card', methods=['POST'])
-def add_card_post():
-    if request.method == 'POST':
-        # GET FORM DATA
-        user_id = request.form['user_id']
-        interest_rate = float(request.form['interest_rate'])
-        loan = float(request.form['loan'])
-        payment = float(request.form['payment'])
-        new_charges = float(request.form['new_charges'])
-
-        # QUERY USER AND GET FULLNAME
-        user = query_user(user_id)[0]
-        fullname = f'{user[1]} {user[2]}'
-
-        # CREATE CARD INSTANCE BASED ON REQUEST INFO
-        new_card = CreditCard(fullname, interest_rate,
-                              loan, payment, new_charges)
-        new_card.export_info()
-
-        # INSERT NEW CARD INTO MYSQL TABLE
-        cursor = mysql.connection.cursor()
-        cursor.execute("""
-          INSERT INTO credit_cards (user_id, card_number, expiration_date, cvv, type, interest_rate, loan, payment, new_charges, new_loan)
-          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (user_id, new_card.get_card_number(), new_card.get_expiration_date(), new_card.get_cvv(), new_card.get_type(), new_card.interest_rate, new_card.loan, new_card.payment, new_card.new_charges, new_card.new_loan))
-        mysql.connection.commit()
-
-        return redirect(url_for('index'))
-
-
-@app.route('/user/<user_id>/add-service-card')
-def add_service_card_get(user_id):
-    user = query_user(user_id)
-    return render_template(
-        'add-service-card.html',
-        user=user[0],
-        title="Add Service Card"
-    )
-
-
-@app.route('/add-service-card', methods=['POST'])
-def add_service_card_post():
-    if request.method == 'POST':
-        # GET FORM DATA
-        user_id = request.form['user_id']
-        loan = float(request.form['loan'])
-
-        # QUERY USER AND GET FULLNAME
-        user = query_user(user_id)[0]
-        fullname = f'{user[1]} {user[2]}'
-
-        # CREATE CARD INSTANCE BASED ON REQUEST INFO
-        new_card = ServiceCard(fullname, loan)
-        new_card.export_info()
-
-        # INSERT NEW CARD INTO MYSQL TABLE
-        cursor = mysql.connection.cursor()
-        cursor.execute("""
-          INSERT INTO service_cards (user_id, card_number, expiration_date, cvv, type, loan, payment)
-          VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (user_id, new_card.get_card_number(), new_card.get_expiration_date(), new_card.get_cvv(), new_card.get_type(), new_card.loan, new_card.payment))
-        mysql.connection.commit()
-
-        return redirect(url_for('index'))
-
-
-@app.route('/add-user')
-def add_user_get():
-    return render_template('add-user.html', title="Add User")
-
-
-@app.route('/add-user', methods=['POST'])
-def add_user_post():
-    if request.method == 'POST':
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        cursor = mysql.connection.cursor()
-        cursor.execute(
-            'INSERT INTO users (firstname, lastname) VALUES (%s, %s)', (firstname, lastname))
-        mysql.connection.commit()
-    return redirect(url_for('index'))
-
-
-@app.route('/user/<id>')
-def user_info(id):
+@app.route('/user/<int:id>', methods=['GET'])
+def get_user(id):
 
     # FETCH USER
     user = query_user(id)
@@ -199,43 +105,145 @@ def user_info(id):
     )
 
 
-@ app.route('/credit-card/<card_number>')
-def credit_card_info(card_number):
-    cursor = mysql.connection.cursor()
-    cursor.execute(
-        f'SELECT * FROM credit_cards WHERE card_number = {card_number}')
-    data = cursor.fetchall()
-    return render_template('credit-card-info.html', card=data[0], title="Credit Card Info")
+@app.route('/add/user', methods=['GET'])
+def get_add_user():
+    return render_template('add-user.html', title="Add User")
 
 
-@ app.route('/service-card/<card_number>')
-def service_card_info(card_number):
-    cursor = mysql.connection.cursor()
-    cursor.execute(
-        f'SELECT * FROM service_cards WHERE card_number = {card_number}')
-    data = cursor.fetchall()
-    return render_template('service-card-info.html', card=data[0], title="Service Card Info")
-
-
-@ app.route('/delete/credit-card/<id>')
-def delete_credit_card(id):
-    cursor = mysql.connection.cursor()
-    cursor.execute(f'DELETE FROM credit_cards WHERE card_id = {id}')
-    mysql.connection.commit()
+@app.route('/add/user', methods=['POST'])
+def post_add_user():
+    if request.method == 'POST':
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            'INSERT INTO users (firstname, lastname) VALUES (%s, %s)', (firstname, lastname))
+        mysql.connection.commit()
     return redirect(url_for('index'))
 
 
-@ app.route('/delete/service-card/<id>')
-def delete_service_card(id):
+@app.route('/add/user/<int:user_id>/<string:type>-card', methods=['GET'])
+def get_add_card(user_id, type):
+    user = query_user(user_id)
+    return render_template(
+        f'add-card.html',
+        user=user[0],
+        title=f"Add {type.capitalize()} Card",
+        type=type
+    )
+
+
+@app.route('/add/<string:type>-card', methods=['POST'])
+def post_add_card(type):
+    if request.method == 'POST':
+        # GET FORM DATA
+        user_id = request.form['user_id']
+        loan = float(request.form['loan'])
+
+        # QUERY USER AND GET FULLNAME
+        user = query_user(user_id)[0]
+        fullname = f'{user[1]} {user[2]}'
+
+        # CURSOR MYSQL
+        cursor = mysql.connection.cursor()
+
+        if type == "credit":
+            interest_rate = float(request.form['interest_rate'])
+            payment = float(request.form['payment'])
+            new_charges = float(request.form['new_charges'])
+
+            # CREATE CREDIT CARD INSTANCE BASED ON REQUEST INFO
+            new_card = CreditCard(fullname, interest_rate,
+                                  loan, payment, new_charges)
+
+            # INSERT NEW CARD INTO MYSQL TABLE
+            cursor.execute("""
+              INSERT INTO credit_cards (user_id, card_number, expiration_date, cvv, type, interest_rate, loan, payment, new_charges, new_loan)
+              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+              """, (user_id, new_card.get_card_number(), new_card.get_expiration_date(), new_card.get_cvv(), new_card.get_type(), new_card.interest_rate, new_card.loan, new_card.payment, new_card.new_charges, new_card.new_loan))
+
+        elif type == "service":
+            new_card = ServiceCard(fullname, loan)
+
+            # INSERT NEW SERVICE CARD INTO MYSQL TABLE
+            cursor.execute("""
+              INSERT INTO service_cards (user_id, card_number, expiration_date, cvv, type, loan, payment)
+              VALUES (%s, %s, %s, %s, %s, %s, %s)
+              """, (user_id, new_card.get_card_number(), new_card.get_expiration_date(), new_card.get_cvv(), new_card.get_type(), new_card.loan, new_card.payment))
+
+        # COMMIT MYSQL CODE
+        mysql.connection.commit()
+
+        # CREATE CARD JSON
+        new_card.export_info()
+
+        return redirect(url_for('index'))
+
+
+@app.route('/<string:type>-card/<int:card_number>', methods=['GET'])
+def get_card(type, card_number):
     cursor = mysql.connection.cursor()
-    cursor.execute(f'DELETE FROM service_cards WHERE card_id = {id}')
+    cursor.execute(
+        f'SELECT * FROM {type}_cards WHERE card_number = {card_number}')
+    data = cursor.fetchall()
+    data = data[0]
+
+    if type == "credit":
+        card_dict = {
+            "card_id": data[0],
+            "card_number": {
+                "n1": data[2][0:4],
+                "n2": data[2][4:8],
+                "n3": data[2][8:12],
+                "n4": data[2][12:16],
+                "full": data[2]
+            },
+            "expiration_date": {
+                "year": data[3].strftime('%Y'),
+                "month": data[3].strftime('%m')
+            },
+            "cvv": data[4],
+            "type": data[5],
+            "interest_date": data[6],
+            "loan": data[7],
+            "payment": data[8],
+            "new_charges": data[9],
+            "new_loan": data[10]
+        }
+    elif type == "service":
+        card_dict = {
+            "card_id": data[0],
+            "card_number": {
+                "n1": data[2][0:4],
+                "n2": data[2][4:8],
+                "n3": data[2][8:12],
+                "n4": data[2][12:16],
+                "full": data[2]
+            },
+            "expiration_date": {
+                "year": data[3].strftime('%Y'),
+                "month": data[3].strftime('%m')
+            },
+            "cvv": data[4],
+            "type": data[5],
+            "loan": data[6],
+            "payment": data[7],
+        }
+
+    return render_template('card-info.html', card=card_dict, title=f"{type.capitalize()} Card Info")
+
+
+@ app.route('/delete/<string:type>-card/<int:id>', methods=['DELETE'])
+def delete_card(type, id):
+    cursor = mysql.connection.cursor()
+    cursor.execute(f'DELETE FROM {type}_cards WHERE card_id = {id}')
     mysql.connection.commit()
     return redirect(url_for('index'))
 
 
 # 404 ERROR
 @app.errorhandler(404)
-def not_found(e):
+def not_found():
     return render_template('404.html', title="Not Found")
 
 
