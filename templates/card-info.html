@@ -1,6 +1,70 @@
 {% extends 'utils/layout.html' %} {% block body %}
 
-<p>{{card}}</p>
-<a href="/delete/{{card['type']}}-card/{{card['card_id']}}">Delete card</a>
+<section class="single-card">
+  <div class="single-card__card">
+    {% include 'utils/card.html' %}
+  </div>
+  <section class="single-card add__container">
+    <form action="/add-{{type}}-card" method="POST" class="add__form">
+
+      <input value="{{user[0]}}" name="user_id" readonly hidden></option>
+
+      {% if card['type'] == "credit" %}
+      <div class="input__container">
+        <label for="interest_rate">Tasa de interés</label>
+        <input type="number" step="0.01" name="interest_rate" id="interest_rate" readonly
+          placeholder="{{card['interest_rate']}}%">
+      </div>
+      {% endif %}
+
+      <div class="input__container">
+        <label for="loan">Deuda</label>
+        <span class="input__currency-sign">$</span>
+        <input type="number" name="loan" id="loan" required value="{{card['loan']}}">
+      </div>
+
+      {% if card['type'] == "credit" %}
+
+      <div class="input__container">
+        <label for="payment">Pago mensual</label>
+        <span class="input__currency-sign">$</span>
+        <input type="number" name="payment" id="payment" required value="{{card['payment']}}">
+      </div>
+
+      <div class="input__container">
+        <label for="new_charges">Cargos adicionales</label>
+        <span class="input__currency-sign">$</span>
+        <input type="number" name="new_charges" id="new_charges" required value="{{card['new_charges']}}">
+      </div>
+
+      <div class="input__container">
+        <label for="new_loan">Deuda actualizada</label>
+        <span class="input__currency-sign">$</span>
+        <input type="number" name="new_loan" id="new_loan" required value="{{card['new_loan']}}">
+      </div>
+      <button type="submit" class="button button-primary">Recalcular deuda</button>
+
+      {% else %}
+
+      <button type="submit" class="button button-primary">Pay Debt</button>
+
+      {% endif %}
+    </form>
+  </section>
+  </div>
+  <div class="single-card__actions">
+    <form action="/generate/report/{{card['card_number']['full']}}" method="GET" class="single-card__action">
+      <button class="single-card__action-button button">Generate report</button>
+
+    </form>
+    <button class="single-card__action-button button">Pay debt</button>
+    <button class="single-card__action-button button">Recalculate loan</button>
+  </div>
+  <div class="single-card__delete">
+    <a href="/delete/{{card['type']}}-card/{{card['card_id']}}" class="button button-danger">Delete card</a>
+  </div>
+</section>
+
+
 
 {% endblock %}

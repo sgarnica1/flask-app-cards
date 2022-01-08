@@ -22,14 +22,7 @@ def get_user(id):
 
     # FETCH USER
     user = query_user(id)
-    firstname = user[0][1]
-    fullname = f'{user[0][1]} {user[0][2]}'
-
-    user_data = {
-        "user_id": id,
-        "firstname": firstname,
-        "fullname": fullname
-    }
+    user_dict = create_user_dict(user[0])
 
     # FETCH CREDIT CARD DATA
     cursor = mysql.connection.cursor()
@@ -46,7 +39,7 @@ def get_user(id):
         for card in credit_card:
             data = {
                 "card_id": card[1],
-                "fullname": fullname,
+                "fullname": user_dict["fullname"],
                 "card_number": {
                     "n1": card[4][0:4],
                     "n2": card[4][4:8],
@@ -76,7 +69,7 @@ def get_user(id):
         for card in service_card:
             data = {
                 "card_id": card[1],
-                "fullname": fullname,
+                "fullname": user_dict['fullname'],
                 "card_number": {
                     "n1": card[4][0:4],
                     "n2": card[4][4:8],
@@ -99,9 +92,9 @@ def get_user(id):
 
     return render_template(
         'user.html',
-        user=user_data,
+        user=user_dict,
         cards=cards,
-        title=firstname
+        title=user_dict['firstname']
     )
 
 
@@ -188,6 +181,12 @@ def get_card(type, card_number):
     data = cursor.fetchall()
     data = data[0]
 
+    # QUERY USER
+    user_id = data[1]
+    user = query_user(user_id)
+    user_dict = create_user_dict(user[0])
+
+    # CREATE CARD DICTIONARY
     if type == "credit":
         card_dict = {
             "card_id": data[0],
@@ -204,12 +203,13 @@ def get_card(type, card_number):
             },
             "cvv": data[4],
             "type": data[5],
-            "interest_date": data[6],
+            "interest_rate": data[6],
             "loan": data[7],
             "payment": data[8],
             "new_charges": data[9],
             "new_loan": data[10]
         }
+
     elif type == "service":
         card_dict = {
             "card_id": data[0],
@@ -230,7 +230,7 @@ def get_card(type, card_number):
             "payment": data[7],
         }
 
-    return render_template('card-info.html', card=card_dict, title=f"{type.capitalize()} Card Info")
+    return render_template('card-info.html', card=card_dict, user=user_dict, title=f"{type.capitalize()} Card Info")
 
 
 @ app.route('/delete/<string:type>-card/<int:id>', methods=['DELETE'])
@@ -258,6 +258,25 @@ def query_user(id: int):
     cursor = mysql.connection.cursor()
     cursor.execute(f'SELECT * FROM users WHERE user_id={id}')
     return cursor.fetchall()
+
+
+def create_user_dict(user: list) -> dict:
+    """ Creates a dictionary based on user information
+
+    Args:
+    list: user list (id, firstname, lastname) 
+
+    Rerturn:
+    dict: user dictionary crated with args
+
+    """
+    firstname = user[1]
+    fullname = f'{user[1]} {user[2]}'
+    return {
+        "user_id": user[0],
+        "firstname": firstname,
+        "fullname": fullname
+    }
 
 
 if __name__ == '__main__':

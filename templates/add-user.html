@@ -1,7 +1,7 @@
 {% extends 'utils/layout.html' %} {% block body %}
 
-<section class="add-user">
-  <form action="/add/user" method="POST" class="add-user__form">
+<section class="add__container">
+  <form action="/add/user" method="POST" class="add__form">
     <div class="input__container">
       <label for="firstname">Firstame</label>
       <input type="text" name="firstname" id="firstname" required />
@@ -10,7 +10,7 @@
       <label for="lastname">Lastname</label>
       <input type="text" name="lastname" id="lastname" required />
     </div>
-    <button type="submit" class="button-primary">Add</button>
+    <button type="submit" class="button button-primary">Add</button>
   </form>
 </section>
 

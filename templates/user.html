@@ -1,20 +1,26 @@
 {% extends 'utils/layout.html' %} {% block body %}
 
 <section class="user-profile">
+  {% if cards|length > 0 %}
   <section class="user-profile__cards">
-    {% if cards|length > 0 %}
     <div class="user-profile__cards-container">
       {% for card in cards %}
-      {% include 'utils/card.html' %}
+      <a href="/{{card['type']}}-card/{{card['card_number']['full']}}" class="user-profile__card-link">
+        {% include 'utils/card.html' %}
+      </a>
       {% endfor %}
     </div>
-    {% endif %}
   </section>
+  {% else %}
+  <section class="user-profile__empty">
+    <h2>There are no cards to display</h2>
+  </section>
+  {% endif %}
 
   <section class="user-profile__add-buttons">
-    <a href="/add/user/{{user['user_id']}}/credit-card" class="add-card credit button-primary">Nueva tarjeta de
+    <a href="/add/user/{{user['user_id']}}/credit-card" class="add-card credit button button-primary">Nueva tarjeta de
       crédito</a>
-    <a href="/add/user/{{user['user_id']}}/service-card" class="add-card service button-primary">Nueva tarjeta de
+    <a href="/add/user/{{user['user_id']}}/service-card" class="add-card service button button-primary">Nueva tarjeta de
       servicios</a>
   </section>
 </section>
