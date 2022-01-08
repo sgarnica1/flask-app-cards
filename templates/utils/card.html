@@ -1,27 +1,25 @@
 <article class="vcard vcard-{{card['type']}}">
-  <a href="/{{card['type']}}-card/{{card['card_number']['full']}}" class="vcard__link">
-    <section class="vcard__header">
-      <div class="vcard__logo"><img src="{{url_for('static', filename='img/visa.png')}}" alt=""></div>
-      <div class="vcard__type">{{card['type']|capitalize}}</div>
-    </section>
-    <section class="vcard__number">
-      <p class="vcard__number-1">{{card['card_number']['n1']}}</p>
-      <p class="vcard__number-2">{{card['card_number']['n2']}}</p>
-      <p class="vcard__number-3">{{card['card_number']['n3']}}</p>
-      <p class="vcard__number-4">{{card['card_number']['n4']}}</p>
-    </section>
-    <section class="vcard__info">
-      <div class="vcard__card-holder">
-        <span class="vcard__info__title">Card Holder</span>
-        <p class="vcard__info__name">{{user['fullname']}}</p>
-      </div>
-      <div class="vcard__card-expires">
-        <span class="vcard__info__title">Expires</span>
-        <p class="vcard__info__name">
-          {{card['expiration_date']['month']}}/{{card['expiration_date']['year']}}
-        </p>
-      </div>
+  <section class="vcard__header">
+    <div class="vcard__logo"><img src="{{url_for('static', filename='img/visa.png')}}" alt=""></div>
+    <div class="vcard__type">{{card['type']|capitalize}}</div>
+  </section>
+  <section class="vcard__number">
+    <p class="vcard__number-1">{{card['card_number']['n1']}}</p>
+    <p class="vcard__number-2">{{card['card_number']['n2']}}</p>
+    <p class="vcard__number-3">{{card['card_number']['n3']}}</p>
+    <p class="vcard__number-4">{{card['card_number']['n4']}}</p>
+  </section>
+  <section class="vcard__info">
+    <div class="vcard__card-holder">
+      <span class="vcard__info__title">Card Holder</span>
+      <p class="vcard__info__name">{{user['fullname']}}</p>
+    </div>
+    <div class="vcard__card-expires">
+      <span class="vcard__info__title">Expires</span>
+      <p class="vcard__info__name">
+        {{card['expiration_date']['month']}}/{{card['expiration_date']['year']}}
+      </p>
+    </div>
 
-    </section>
-  </a>
+  </section>
 </article>

@@ -5,6 +5,8 @@
   --secondary-font-color: #5c5c5c;
   --alternative-font-color: #9b9b9b;
   --btn-color-primary: rgb(103, 221, 103);
+  --btn-color-secondary: #415c76;
+  --btn-color-danger: rgba(241, 52, 52, 0.904);
   --background-color: #fff;
   --main-font: "Public Sans", sans-serif;
   --border-radius: 20px;
@@ -27,25 +29,33 @@ body {
 
 /* - - - - - - - - - - - - - -  UTILS CONFIG - - - - - - - - - - - - - - */
 
-.button-primary {
+.button {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 60px;
   width: 100%;
   max-width: 500px;
+  margin-bottom: 20px;
   border-radius: 10px;
   text-decoration: none;
   outline: none;
   border: none;
   font-size: 18px;
   font-weight: 500;
-  background-color: var(--btn-color-primary);
   color: var(--background-color);
   cursor: pointer;
 }
 
-.button-primary:hover {
+.button-primary {
+  background-color: var(--btn-color-primary);
+}
+
+.button-danger {
+  background-color: var(--btn-color-danger);
+}
+
+.button:hover {
   box-shadow: 0 4px 14px 0 rgba(150, 150, 150, 0.5);
 }
 
@@ -73,16 +83,29 @@ body {
   outline: none;
   border: none;
   background: none;
-  padding: 0 10px;
+  padding: 0 25px;
   font-size: 16px;
   font-weight: 500;
   color: var(--secondary-font-color);
+}
+
+.input__container input::placeholder {
+  font-size: var(--main-font);
+  color: var(--alternative-font-color);
+}
+
+.input__container .input__currency-sign {
+  position: absolute;
+  left: 10px;
+  top: 15px;
+  color: var(--alternative-font-color);
 }
 
 /* - - - - - - - - - - - - - - NAV - - - - - - - - - - - - - - */
 header {
   position: sticky;
   top: 0;
+  z-index: 9999;
 }
 .nav {
   width: 100%;
@@ -228,7 +251,7 @@ header {
 }
 
 /* - - - - - - - - - - - - - - ADD/EDIT USER FORM - - - - - - - - - - - - - - */
-.add-user {
+.add__container {
   padding: 50px 20px;
   display: flex;
   justify-content: center;
@@ -236,7 +259,7 @@ header {
   width: 100%;
 }
 
-.add-user .add-user__form {
+.add__container .add__form {
   display: flex;
   flex-direction: column;
   max-width: 500px;
@@ -267,10 +290,22 @@ header {
   cursor: pointer;
 }
 
+.user-profile .user-profile__empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  text-align: center;
+}
+
 .user-profile .user-profile__cards-container {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+.user-profile .user-profile__card-link {
+  text-decoration: none;
 }
 
 .user-profile__add-buttons {
@@ -286,6 +321,48 @@ header {
 .user-profile__add-buttons .add-card {
   margin: 20px 0;
   max-width: 280px;
+}
+
+/* - - - - - - - - - - - - - - SINGLE CARD - - - - - - - - - - - - - - */
+.single-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  padding: 0 30px;
+}
+
+.single-card > div {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 50px;
+}
+
+.single-card.add__container {
+  padding-top: 30px;
+  margin-bottom: 50px;
+}
+
+.single-card .single-card__actions,
+.single-card__actions .single-card__action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.single-card__actions .single-card__action-button {
+  margin-bottom: 30px;
+  color: var(--btn-color-secondary);
+  background-color: #f5f5f5;
+}
+
+.single-card .single-card__delete {
+  width: 100%;
 }
 
 /* - - - - - - - - - - - - - - 404 NOT FOUND - - - - - - - - - - - - - - */
@@ -326,6 +403,9 @@ header {
     bottom: 20px;
     right: 20px;
     font-size: 38px;
+  }
+  .single-card .single-card__info {
+    flex-direction: row;
   }
 }
 
