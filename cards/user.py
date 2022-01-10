@@ -6,6 +6,9 @@ class User:
         self.name = name
         self.cards = []
 
+    def __str__(self) -> str:
+        return f'User: {self.name}'
+
     def add_card(self, card) -> None:
         """Add a Card instance to the user's cards list
 
@@ -31,7 +34,7 @@ class User:
             if card_number == current_card_number:
                 self.cards.remove(card)
 
-    def print_reports(self) -> None:
+    def generate_card_reports(self) -> None:
         """Print report for each card in a list of cards
 
         Args:
@@ -42,4 +45,4 @@ class User:
         """
 
         for card in self.cards:
-            card.export_info()
+            card.create_report()

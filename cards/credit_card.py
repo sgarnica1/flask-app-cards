@@ -1,12 +1,14 @@
 import math
 import random
 import json
-from datetime import date, datetime
+from datetime import datetime
+import os
 
 
 class CreditCard:
-    def __init__(self, name: str, interest_rate: float, loan: float, payment: float, new_charges: float) -> None:
+    def __init__(self, name: str, user_id: int, interest_rate: float, loan: float, payment: float, new_charges: float) -> None:
         self.name = name
+        self.user_id = user_id
         self.card_number = self.create_card_number()
         self.expiration_date = self.create_expiration_date()
         self.cvv = self.create_cvv()
@@ -20,6 +22,31 @@ class CreditCard:
             self.payment = float(payment)
         self.new_charges = float(new_charges)
         self.new_loan = self.calculate_new_loan()
+
+    def __str__(self) -> str:
+        """Prints the information of a card
+
+          Args:
+            self
+
+          Returns:
+            str
+          """
+
+        return f"""
+            REPORTE TARJETA CON TERMINACION {self.card_number[-4:]}
+            Nombre del titular: {self.name}
+            Número de tarjeta: {self.card_number}
+            Fecha de vencimiento: {self.expiration_date}
+            CVV: {self.cvv}
+            Tipo: {self.type}
+            Tasa de interés: {self.interest_rate}%
+                      f"Deuda actual: {self.format_currency(self.loan)}
+            Pago mensual: {self.format_currency(self.payment)}
+            Cargos adicionales: {self.format_currency(self.new_charges)}
+            Deuda actulizada: {self.format_currency(self.new_loan)}
+            \n
+            """
 
     def create_card_number(self) -> str:
         """Creates a card number based on random numbers
@@ -36,7 +63,7 @@ class CreditCard:
         return card_number
 
     def create_expiration_date(self) -> str:
-        """Creates card's expiration date based on current date and adding 5 years to the current year. 
+        """Creates card's expiration date based on current date and adding 5 years to the current year.
 
         Args:
           None
@@ -60,7 +87,7 @@ class CreditCard:
           None
 
         Returns:
-          str: Card's cvv 
+          str: Card's cvv
         """
         cvv = ""
         for _ in range(3):
@@ -68,50 +95,6 @@ class CreditCard:
             if cvv == "0":
                 cvv = "1"
         return cvv
-
-    def get_card_number(self) -> str:
-        """Return card number
-
-        Args:
-          None
-
-        Returns:
-          str: Card number at 16 digits.
-        """
-        return self.card_number
-
-    def get_expiration_date(self) -> str:
-        """Return expiration date
-
-        Args:
-          None
-
-        Returns:
-          str: Expiration date in format mm/yy.
-        """
-        return self.expiration_date
-
-    def get_cvv(self) -> str:
-        """Return card's cvv
-
-        Args:
-          None
-
-        Returns:
-          str: Card's cvv.
-        """
-        return self.cvv
-
-    def get_type(self) -> str:
-        """Return type of card
-
-        Args:
-          None
-
-        Returns:
-          str: Type of card (CREDIT OR SERVICE).
-        """
-        return self.type
 
     def calculate_new_loan(self) -> float:
         """Calculates new loan of a card based on its current info
@@ -170,32 +153,6 @@ class CreditCard:
             "new_charges": self.new_charges,
             "new_loan": self.new_loan
         }
-
-    def make_report(self) -> None:
-        """Prints the information of a card
-
-        Args:
-          dict: Card dictionary
-
-        Returns:
-          None
-        """
-
-        print(
-            f'\n- - - REPORTE TARJETA CON TERMINACION {self.card_number[-4:]} - - -')
-        print(f"Nombre del titular: {self.name}")
-        print(f"Número de tarjeta: {self.card_number}")
-        print(f"Fecha de vencimiento: {self.expiration_date}")
-        print(f"CVV: {self.cvv}")
-        print(f"Tipo: {self.type}")
-        print(f"Tasa de interés: {self.interest_rate}%")
-        print(
-            f"Deuda actual: {self.format_currency(self.loan)}")
-        print(f"Pago mensual: {self.format_currency(self.payment)}")
-        print(f"Cargos adicionales: {self.format_currency(self.new_charges)}")
-        print(f"Deuda actulizada: {self.format_currency(self.new_loan)}")
-
-        print("\n\n")
 
     def recurrent_payment(self) -> dict:
         """Pays the total loan based on the payment amount and displays for long will it take to pay it.
@@ -268,7 +225,12 @@ class CreditCard:
         """
         return "${:,.2f}".format(money)
 
-    def export_info(self):
+    def create_report(self):
         info = self.create_card_dict()
-        with open(f'./cards-info/{self.card_number}.json', 'w', encoding='utf-8') as json_file:
+
+        # CREATE DIRECTORY
+        filename = f'./cards-info/{self.user_id}_{self.name}/{self.card_number}.json'
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        with open(filename, 'w', encoding='utf-8') as json_file:
             json.dump(info, json_file, indent=4, ensure_ascii=False)
