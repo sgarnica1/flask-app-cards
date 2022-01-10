@@ -1,7 +1,7 @@
 from cards.service_card import ServiceCard
 from cards.credit_card import CreditCard
 from cards.user import User
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_mysqldb import MySQL
 
 app = Flask(__name__)
@@ -25,8 +25,9 @@ def get_user(id):
     user = query_user(id)
     user_dict = create_user_dict(user[0])
 
-    # FETCH CREDIT CARD DATA
     cursor = mysql.connection.cursor()
+
+    # FETCH CREDIT CARD DATA
     cursor.execute(f"""
       SELECT *
       FROM credit_cards
@@ -59,13 +60,13 @@ def get_user(id):
     cards = credit_card_data + service_card_data
 
     # SORT CARDS BY EXPIRATION YEAR
-    cards = sorted(cards, key=lambda i: i['expiration_date']['year'])
+    cards = sorted(cards, key=lambda i: i['expiration_date']['full'])
 
     return render_template(
         'user.html',
         user=user_dict,
         cards=cards,
-        title=user_dict['firstname']
+        title=user_dict['firstname'],
     )
 
 
@@ -138,10 +139,7 @@ def post_add_card(type):
         # COMMIT MYSQL CODE
         mysql.connection.commit()
 
-        # CREATE CARD JSON
-        new_card.export_info()
-
-        return redirect(url_for('index_get'))
+        return redirect(url_for('get_user', id=user_id))
 
 
 @app.route('/<string:type>-card/<int:card_number>', methods=['GET'])
@@ -167,16 +165,63 @@ def get_card(type, card_number):
     return render_template('card-info.html', card=card_dict, user=user_dict, title=f"{type.capitalize()} Card Info")
 
 
-@ app.route('/delete/<string:type>-card/<int:id>', methods=['DELETE'])
-def delete_card(type, id):
+# DELETE
+@ app.route('/delete/<string:type>-card/<int:id>', methods=['DELETE', 'GET'])
+def delete_card(type: str, id: int):
     cursor = mysql.connection.cursor()
+    # GET USER ID
+    cursor.execute(f'SELECT user_id from {type}_cards WHERE card_id={id}')
+    user_id = cursor.fetchall()[0]
+
+    # DELETE CARD
     cursor.execute(f'DELETE FROM {type}_cards WHERE card_id = {id}')
     mysql.connection.commit()
-    return redirect(url_for('index_get'))
+
+    # REDIRECT TO USER PAGE
+    return redirect(url_for('get_user', id=user_id))
 
 
-# GENERATE REPORT FOR CARD
-@app.route('/report/user/<int:user_id>')
+@app.route('/delete/user/<int:user_id>', methods=['DELETE', 'GET'])
+def delete_user(user_id: int):
+    user = query_user(user_id)
+
+    cursor = mysql.connection.cursor()
+
+    # FETCH CREDIT CARD DATA
+    cursor.execute(f"""
+      SELECT *
+      FROM credit_cards
+      INNER JOIN users ON users.user_id = credit_cards.user_id
+      WHERE users.user_id={user_id}
+    """)
+    credit_card = cursor.fetchall()
+
+    # FETCH SERVICE CARD DATA
+    cursor.execute(f"""
+      SELECT *
+      FROM service_cards
+      INNER JOIN users ON users.user_id = service_cards.user_id
+      WHERE users.user_id={user_id}
+    """)
+    service_card = cursor.fetchall()
+
+    if len(credit_card) > 0 or len(service_card) > 0:
+        flash('You must delete all cards before deleting user')
+        return redirect(url_for('get_user', id=user_id))
+    else:
+        try:
+            cursor = mysql.connection.cursor()
+            cursor.execute(f'DELETE FROM users WHERE user_id={user_id}')
+            mysql.connection.commit()
+            flash('User deleted succesfully')
+            return redirect(url_for('index_get'))
+        except:
+            flash('There was an error deleting the user')
+            return redirect(url_for('get_user', id=user_id))
+
+
+# GENERATE REPORTS
+@ app.route('/report/user/<int:user_id>')
 def user_report(user_id: int):
     # FETCH USER
     user = query_user(user_id)
@@ -223,7 +268,7 @@ def user_report(user_id: int):
     return(redirect(url_for('get_user', id=user_id)))
 
 
-@app.route('/report/<string:type>/<string:card_number>')
+@ app.route('/report/<string:type>/<string:card_number>')
 def card_report(type: str, card_number: str):
     cursor = mysql.connection.cursor()
     cursor.execute(
@@ -255,7 +300,7 @@ def card_report(type: str, card_number: str):
 
 
 # 404 ERROR
-@app.errorhandler(404)
+@ app.errorhandler(404)
 def not_found(e):
     return render_template('404.html', title="Not Found")
 
@@ -277,7 +322,7 @@ def create_user_dict(user: list) -> dict:
     """ Creates a dictionary based on user information
 
     Args:
-    list: user list (id, firstname, lastname) 
+    list: user list (id, firstname, lastname)
 
     Rerturn:
     dict: user dictionary crated with args
