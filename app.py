@@ -1,5 +1,6 @@
 from cards.service_card import ServiceCard
 from cards.credit_card import CreditCard
+from cards.user import User
 from flask import Flask, render_template, request, redirect, url_for
 from flask_mysqldb import MySQL
 
@@ -27,7 +28,7 @@ def get_user(id):
     # FETCH CREDIT CARD DATA
     cursor = mysql.connection.cursor()
     cursor.execute(f"""
-      SELECT users.user_id, credit_cards.card_id, users.firstname, users.lastname, credit_cards.card_number, credit_cards.expiration_date, credit_cards.type
+      SELECT *
       FROM credit_cards
       INNER JOIN users ON users.user_id = credit_cards.user_id
       WHERE users.user_id={id}
@@ -37,27 +38,12 @@ def get_user(id):
     credit_card_data = []
     if len(credit_card) > 0:
         for card in credit_card:
-            data = {
-                "card_id": card[1],
-                "fullname": user_dict["fullname"],
-                "card_number": {
-                    "n1": card[4][0:4],
-                    "n2": card[4][4:8],
-                    "n3": card[4][8:12],
-                    "n4": card[4][12:16],
-                    "full": card[4]
-                },
-                "expiration_date": {
-                    "year": card[5].strftime('%Y')[-2:],
-                    "month": card[5].strftime('%m')
-                },
-                "type": card[6]
-            }
+            data = create_credit_card_dict(card)
             credit_card_data.append(data)
 
     # FETCH SERVICE CARD DATA
     cursor.execute(f"""
-      SELECT users.user_id, service_cards.card_id, users.firstname, users.lastname, service_cards.card_number, service_cards.expiration_date, service_cards.type
+      SELECT *
       FROM service_cards
       INNER JOIN users ON users.user_id = service_cards.user_id
       WHERE users.user_id={id}
@@ -67,22 +53,7 @@ def get_user(id):
     service_card_data = []
     if len(service_card) > 0:
         for card in service_card:
-            data = {
-                "card_id": card[1],
-                "fullname": user_dict['fullname'],
-                "card_number": {
-                    "n1": card[4][0:4],
-                    "n2": card[4][4:8],
-                    "n3": card[4][8:12],
-                    "n4": card[4][12:16],
-                    "full": card[4]
-                },
-                "expiration_date": {
-                    "year": card[5].strftime('%Y')[-2:],
-                    "month": card[5].strftime('%m'),
-                },
-                "type": card[6]
-            }
+            data = create_service_card_dict(card)
             service_card_data.append(data)
 
     cards = credit_card_data + service_card_data
@@ -112,7 +83,7 @@ def post_add_user():
         cursor.execute(
             'INSERT INTO users (firstname, lastname) VALUES (%s, %s)', (firstname, lastname))
         mysql.connection.commit()
-    return redirect(url_for('index'))
+    return redirect(url_for('index_get'))
 
 
 @app.route('/add/user/<int:user_id>/<string:type>-card', methods=['GET'])
@@ -146,23 +117,23 @@ def post_add_card(type):
             new_charges = float(request.form['new_charges'])
 
             # CREATE CREDIT CARD INSTANCE BASED ON REQUEST INFO
-            new_card = CreditCard(fullname, interest_rate,
+            new_card = CreditCard(fullname, user_id, interest_rate,
                                   loan, payment, new_charges)
 
             # INSERT NEW CARD INTO MYSQL TABLE
             cursor.execute("""
               INSERT INTO credit_cards (user_id, card_number, expiration_date, cvv, type, interest_rate, loan, payment, new_charges, new_loan)
               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-              """, (user_id, new_card.get_card_number(), new_card.get_expiration_date(), new_card.get_cvv(), new_card.get_type(), new_card.interest_rate, new_card.loan, new_card.payment, new_card.new_charges, new_card.new_loan))
+              """, (user_id, new_card.card_number, new_card.expiration_date, new_card.cvv, new_card.type, new_card.interest_rate, new_card.loan, new_card.payment, new_card.new_charges, new_card.new_loan))
 
         elif type == "service":
-            new_card = ServiceCard(fullname, loan)
+            new_card = ServiceCard(fullname, user_id, loan)
 
             # INSERT NEW SERVICE CARD INTO MYSQL TABLE
             cursor.execute("""
               INSERT INTO service_cards (user_id, card_number, expiration_date, cvv, type, loan, payment)
               VALUES (%s, %s, %s, %s, %s, %s, %s)
-              """, (user_id, new_card.get_card_number(), new_card.get_expiration_date(), new_card.get_cvv(), new_card.get_type(), new_card.loan, new_card.payment))
+              """, (user_id, new_card.card_number, new_card.expiration_date, new_card.cvv, new_card.type, new_card.loan, new_card.payment))
 
         # COMMIT MYSQL CODE
         mysql.connection.commit()
@@ -170,7 +141,7 @@ def post_add_card(type):
         # CREATE CARD JSON
         new_card.export_info()
 
-        return redirect(url_for('index'))
+        return redirect(url_for('index_get'))
 
 
 @app.route('/<string:type>-card/<int:card_number>', methods=['GET'])
@@ -188,7 +159,7 @@ def get_card(type, card_number):
 
     # CREATE CARD DICTIONARY
     if type == "credit":
-        card_dict = create_credit_card_dict()
+        card_dict = create_credit_card_dict(data)
 
     elif type == "service":
         card_dict = create_service_card_dict(data)
@@ -201,12 +172,59 @@ def delete_card(type, id):
     cursor = mysql.connection.cursor()
     cursor.execute(f'DELETE FROM {type}_cards WHERE card_id = {id}')
     mysql.connection.commit()
-    return redirect(url_for('index'))
+    return redirect(url_for('index_get'))
 
 
 # GENERATE REPORT FOR CARD
-@app.route('/report/<type>/<card_number>')
-def report(type, card_number):
+@app.route('/report/user/<int:user_id>')
+def user_report(user_id: int):
+    # FETCH USER
+    user = query_user(user_id)
+    user_dict = create_user_dict(user[0])
+
+    # NEW USER INSTANCE
+    new_user = User(user_dict['fullname'])
+
+    cursor = mysql.connection.cursor()
+
+    # FETCH CREDIT CARD DATA
+    cursor.execute(f"""
+      SELECT *
+      FROM credit_cards
+      INNER JOIN users ON users.user_id = credit_cards.user_id
+      WHERE users.user_id={user_id}
+    """)
+    credit_card = cursor.fetchall()
+
+    # FETCH SERVICE CARD DATA
+    cursor.execute(f"""
+      SELECT *
+      FROM service_cards
+      INNER JOIN users ON users.user_id = service_cards.user_id
+      WHERE users.user_id={user_id}
+    """)
+    service_card = cursor.fetchall()
+
+    if len(credit_card) > 0:
+        for card in credit_card:
+            card_dict = create_credit_card_dict(card)
+            new_card = CreditCard(user_dict['fullname'], user_id, card_dict['interest_rate'],
+                                  card_dict['loan'], card_dict['payment'], card_dict['new_charges'])
+            new_user.add_card(new_card)
+
+    if len(service_card) > 0:
+        for card in service_card:
+            card_dict = create_service_card_dict(card)
+            new_card = ServiceCard(
+                user_dict['fullname'], user_id, card_dict['loan'])
+            new_user.add_card(new_card)
+
+    new_user.generate_card_reports()
+    return(redirect(url_for('get_user', id=user_id)))
+
+
+@app.route('/report/<string:type>/<string:card_number>')
+def card_report(type: str, card_number: str):
     cursor = mysql.connection.cursor()
     cursor.execute(
         f'SELECT * FROM {type}_cards WHERE card_number = {card_number}')
@@ -220,18 +238,18 @@ def report(type, card_number):
 
     if type == 'credit':
         card_dict = create_credit_card_dict(data)
-        card = CreditCard(user_dict['fullname'], card_dict['interest_rate'],
+        card = CreditCard(user_dict['fullname'], user_id, card_dict['interest_rate'],
                           card_dict['loan'], card_dict['payment'], card_dict['new_charges'])
 
     elif type == "service":
         card_dict = create_service_card_dict(data)
-        card = ServiceCard(user_dict["fullname"], card_dict['loan'])
+        card = ServiceCard(user_dict["fullname"], user_id, card_dict['loan'])
 
     card.card_number = card_dict['card_number']['full']
     card.expiration_date = card_dict["expiration_date"]["full"]
     card.cvv = card_dict['cvv']
 
-    card.export_info()
+    card.create_report()
 
     return redirect(url_for('get_card', card_number=card_number, type=type))
 

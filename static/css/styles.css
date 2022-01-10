@@ -51,6 +51,11 @@ body {
   background-color: var(--btn-color-primary);
 }
 
+.button-secondary {
+  color: var(--btn-color-secondary);
+  background-color: #f5f5f5;
+}
+
 .button-danger {
   background-color: var(--btn-color-danger);
 }
@@ -308,17 +313,14 @@ header {
   text-decoration: none;
 }
 
-.user-profile__add-buttons {
+.user-profile__actions {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  position: fixed;
-  bottom: 20px;
-  left: 0;
 }
-.user-profile__add-buttons .add-card {
+.user-profile__actions .add-card {
   margin: 20px 0;
   max-width: 280px;
 }
@@ -413,12 +415,15 @@ header {
   }
 }
 
-@media (min-width: 600px) {
-  .user-profile__add-buttons {
+@media (min-width: 980px) {
+  .user-profile__actions {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     justify-items: center;
   }
+}
+
+@media (min-width: 600px) {
   .single-card.add__container form {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

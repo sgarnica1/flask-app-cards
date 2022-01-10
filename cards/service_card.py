@@ -3,12 +3,33 @@ import random
 
 
 class ServiceCard(CreditCard):
-    def __init__(self, name, loan) -> None:
-        super().__init__(name=name, interest_rate=0,
+    def __init__(self, name, user_id, loan) -> None:
+        super().__init__(name=name, user_id=user_id, interest_rate=0,
                          loan=loan, payment=0, new_charges=0)
         self.card_number = self.create_card_number()
         self.type = "service"
         self.loan = loan
+
+    def __str__(self) -> str:
+        """Prints the information of a card
+
+        Args:
+          self
+
+        Returns:
+          str
+        """
+
+        return f"""
+          REPORTE TARJETA CON TERMINACION {self.card_number[-4:]}
+          Nombre del titular: {self.name}
+          Número de tarjeta: {self.card_number}
+          Fecha de vencimiento: {self.expiration_date}
+          CVV: {self.cvv}
+          Tipo: {self.type}
+          Deuda actual: {self.format_currency(self.loan)}
+          \n
+        """
 
     def create_card_number(self) -> str:
         """Creates a card number based on random numbers
@@ -36,31 +57,13 @@ class ServiceCard(CreditCard):
 
         return {
             "name": self.name,
-            "card_number": self.get_card_number(),
-            "expiration_date": self.get_expiration_date(),
-            "cvv": self.get_cvv(),
+            "card_number": self.card_number,
+            "expiration_date": self.expiration_date,
+            "cvv": self.cvv,
             "type": self.type,
             "loan": self.loan,
             "payment": self.payment,
         }
-
-    def make_report(self) -> None:
-        """Prints the information of a card
-
-        Args:
-          dict: Card dictionary
-
-        Returns:
-          None
-        """
-
-        print(f"Nombre del titular: {self.name}")
-        print(f"Número de tarjeta: {self.card_number}")
-        print(f"Fecha de vencimiento: {self.get_expiration_date()}")
-        print(f"CVV: {self.get_cvv()}")
-        print(f"Tipo: {self.type}")
-        print(f"Deuda actual: {self.format_currency(self.loan)}")
-        print("\n\n")
 
     def pay(self):
         invalid = True

@@ -17,7 +17,8 @@
   </section>
   {% endif %}
 
-  <section class="user-profile__add-buttons">
+  <section class="user-profile__actions">
+    <a href="/report/user/{{user['user_id']}}" class="add-card button button-secondary">Generate card reports</a>
     <a href="/add/user/{{user['user_id']}}/credit-card" class="add-card credit button button-primary">Nueva tarjeta de
       crédito</a>
     <a href="/add/user/{{user['user_id']}}/service-card" class="add-card service button button-primary">Nueva tarjeta de
