@@ -42,8 +42,4 @@ class User:
         """
 
         for card in self.cards:
-            card_number = card.get_card_number()
-            print(
-                f'\n- - - TARJETA CON TERMINACION {card_number[-4:]} - - -')
-            card.make_report()
-            print("\n")
+            card.export_info()

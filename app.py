@@ -188,47 +188,10 @@ def get_card(type, card_number):
 
     # CREATE CARD DICTIONARY
     if type == "credit":
-        card_dict = {
-            "card_id": data[0],
-            "card_number": {
-                "n1": data[2][0:4],
-                "n2": data[2][4:8],
-                "n3": data[2][8:12],
-                "n4": data[2][12:16],
-                "full": data[2]
-            },
-            "expiration_date": {
-                "year": data[3].strftime('%Y'),
-                "month": data[3].strftime('%m')
-            },
-            "cvv": data[4],
-            "type": data[5],
-            "interest_rate": data[6],
-            "loan": data[7],
-            "payment": data[8],
-            "new_charges": data[9],
-            "new_loan": data[10]
-        }
+        card_dict = create_credit_card_dict()
 
     elif type == "service":
-        card_dict = {
-            "card_id": data[0],
-            "card_number": {
-                "n1": data[2][0:4],
-                "n2": data[2][4:8],
-                "n3": data[2][8:12],
-                "n4": data[2][12:16],
-                "full": data[2]
-            },
-            "expiration_date": {
-                "year": data[3].strftime('%Y'),
-                "month": data[3].strftime('%m')
-            },
-            "cvv": data[4],
-            "type": data[5],
-            "loan": data[6],
-            "payment": data[7],
-        }
+        card_dict = create_service_card_dict(data)
 
     return render_template('card-info.html', card=card_dict, user=user_dict, title=f"{type.capitalize()} Card Info")
 
@@ -241,9 +204,41 @@ def delete_card(type, id):
     return redirect(url_for('index'))
 
 
+# GENERATE REPORT FOR CARD
+@app.route('/report/<type>/<card_number>')
+def report(type, card_number):
+    cursor = mysql.connection.cursor()
+    cursor.execute(
+        f'SELECT * FROM {type}_cards WHERE card_number = {card_number}')
+    data = cursor.fetchall()
+    data = data[0]
+
+    # QUERY USER
+    user_id = data[1]
+    user = query_user(user_id)[0]
+    user_dict = create_user_dict(user)
+
+    if type == 'credit':
+        card_dict = create_credit_card_dict(data)
+        card = CreditCard(user_dict['fullname'], card_dict['interest_rate'],
+                          card_dict['loan'], card_dict['payment'], card_dict['new_charges'])
+
+    elif type == "service":
+        card_dict = create_service_card_dict(data)
+        card = ServiceCard(user_dict["fullname"], card_dict['loan'])
+
+    card.card_number = card_dict['card_number']['full']
+    card.expiration_date = card_dict["expiration_date"]["full"]
+    card.cvv = card_dict['cvv']
+
+    card.export_info()
+
+    return redirect(url_for('get_card', card_number=card_number, type=type))
+
+
 # 404 ERROR
 @app.errorhandler(404)
-def not_found():
+def not_found(e):
     return render_template('404.html', title="Not Found")
 
 
@@ -276,6 +271,53 @@ def create_user_dict(user: list) -> dict:
         "user_id": user[0],
         "firstname": firstname,
         "fullname": fullname
+    }
+
+
+def create_credit_card_dict(card: list) -> dict:
+    return {
+        "card_id": card[0],
+        "card_number": {
+            "n1": card[2][0:4],
+            "n2": card[2][4:8],
+            "n3": card[2][8:12],
+            "n4": card[2][12:16],
+            "full": card[2]
+        },
+        "expiration_date": {
+            "year": card[3].strftime('%Y'),
+            "month": card[3].strftime('%m'),
+            "full": card[3].strftime('%Y %m %d')
+        },
+        "cvv": card[4],
+        "type": card[5],
+        "interest_rate": card[6],
+        "loan": card[7],
+        "payment": card[8],
+        "new_charges": card[9],
+        "new_loan": card[10]
+    }
+
+
+def create_service_card_dict(card: list) -> dict:
+    return {
+        "card_id": card[0],
+        "card_number": {
+            "n1": card[2][0:4],
+            "n2": card[2][4:8],
+            "n3": card[2][8:12],
+            "n4": card[2][12:16],
+            "full": card[2]
+        },
+        "expiration_date": {
+            "year": card[3].strftime('%Y'),
+            "month": card[3].strftime('%m'),
+            "full": card[3].strftime('%Y %m %d')
+        },
+        "cvv": card[4],
+        "type": card[5],
+        "loan": card[6],
+        "payment": card[7],
     }
 
 

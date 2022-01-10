@@ -53,10 +53,8 @@
   </section>
   </div>
   <div class="single-card__actions">
-    <form action="/generate/report/{{card['card_number']['full']}}" method="GET" class="single-card__action">
-      <button class="single-card__action-button button">Generate report</button>
-
-    </form>
+    <a href="/report/{{card['type']}}/{{card['card_number']['full']}}"
+      class="single-card__action-button button">Generate report</a>
     <button class="single-card__action-button button">Pay debt</button>
     <button class="single-card__action-button button">Recalculate loan</button>
   </div>

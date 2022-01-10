@@ -346,6 +346,10 @@ header {
   margin-bottom: 50px;
 }
 
+.single-card.add__container form {
+  display: flex;
+}
+
 .single-card .single-card__actions,
 .single-card__actions .single-card__action {
   display: flex;
@@ -414,5 +418,15 @@ header {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     justify-items: center;
+  }
+  .single-card.add__container form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .single-card.add__container form .input__container:first-of-type,
+  .single-card.add__container form button {
+    grid-column: 1 / -1;
   }
 }
