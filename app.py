@@ -1,3 +1,4 @@
+from MySQLdb import cursors
 from cards.service_card import ServiceCard
 from cards.credit_card import CreditCard
 from cards.user import User
@@ -9,6 +10,8 @@ app.config.from_object('config')
 
 mysql = MySQL(app)
 
+# INDEX
+
 
 @app.route('/', methods=['GET'])
 def index_get():
@@ -18,8 +21,9 @@ def index_get():
     return render_template('index.html', users=data, title="Users")
 
 
+# USER
 @app.route('/user/<int:id>', methods=['GET'])
-def get_user(id):
+def get_user(id: int):
 
     # FETCH USER
     user = query_user(id)
@@ -70,6 +74,7 @@ def get_user(id):
     )
 
 
+# ADD USER
 @app.route('/add/user', methods=['GET'])
 def get_add_user():
     return render_template('add-user.html', title="Add User")
@@ -87,8 +92,9 @@ def post_add_user():
     return redirect(url_for('index_get'))
 
 
+# ADD CARD
 @app.route('/add/user/<int:user_id>/<string:type>-card', methods=['GET'])
-def get_add_card(user_id, type):
+def get_add_card(user_id: int, type: str):
     user = query_user(user_id)
     return render_template(
         f'add-card.html',
@@ -99,7 +105,7 @@ def get_add_card(user_id, type):
 
 
 @app.route('/add/<string:type>-card', methods=['POST'])
-def post_add_card(type):
+def post_add_card(type: str):
     if request.method == 'POST':
         # GET FORM DATA
         user_id = request.form['user_id']
@@ -139,11 +145,12 @@ def post_add_card(type):
         # COMMIT MYSQL CODE
         mysql.connection.commit()
 
-        return redirect(url_for('get_user', id=user_id))
+        return redirect(url_for('get_card', type=type, card_number=new_card.card_number))
 
 
+# GET CARD INFO
 @app.route('/<string:type>-card/<int:card_number>', methods=['GET'])
-def get_card(type, card_number):
+def get_card(type: str, card_number: int):
     cursor = mysql.connection.cursor()
     cursor.execute(
         f'SELECT * FROM {type}_cards WHERE card_number = {card_number}')
@@ -162,7 +169,12 @@ def get_card(type, card_number):
     elif type == "service":
         card_dict = create_service_card_dict(data)
 
-    return render_template('card-info.html', card=card_dict, user=user_dict, title=f"{type.capitalize()} Card Info")
+    return render_template(
+        'card-info.html',
+        card=card_dict,
+        user=user_dict,
+        title=f"{type.capitalize()} Card Info"
+    )
 
 
 # DELETE
@@ -206,14 +218,14 @@ def delete_user(user_id: int):
     service_card = cursor.fetchall()
 
     if len(credit_card) > 0 or len(service_card) > 0:
-        flash('You must delete all cards before deleting user')
+        flash('You must delete all cards before deleting user', 'danger')
         return redirect(url_for('get_user', id=user_id))
     else:
         try:
             cursor = mysql.connection.cursor()
             cursor.execute(f'DELETE FROM users WHERE user_id={user_id}')
             mysql.connection.commit()
-            flash('User deleted succesfully')
+            flash('User deleted succesfully', 'success')
             return redirect(url_for('index_get'))
         except:
             flash('There was an error deleting the user')
@@ -297,6 +309,126 @@ def card_report(type: str, card_number: str):
     card.create_report()
 
     return redirect(url_for('get_card', card_number=card_number, type=type))
+
+
+# RECALCULATE LOAN
+@app.route('/recalculate-loan/credit/<string:card_number>', methods=['POST', 'GET'])
+def recalculate_loan(card_number: str):
+    if request.method == 'POST':
+        loan = float(request.form['new_loan'])
+        interest_rate = float(request.form['interest_rate'])
+        payment = float(request.form['payment'])
+        new_charges = float(request.form['new_charges'])
+
+    credit_card = CreditCard(
+        'Default user', 0, interest_rate, loan, payment, new_charges)
+
+    new_loan = credit_card.new_loan
+
+    cursor = mysql.connection.cursor()
+
+    cursor.execute(f"""
+        UPDATE credit_cards
+        SET loan={loan},
+        payment={payment},
+        new_charges={new_charges},
+        new_loan={new_loan}
+        WHERE card_number={card_number}
+      """)
+    mysql.connection.commit()
+
+    print(credit_card)
+    return redirect(url_for('get_card', type='credit', card_number=card_number))
+
+
+# MAKE PAYMENTS
+@app.route('/pay-total/<string:type_card>/<string:card_number>', methods=['POST'])
+def make_total_payment(type_card: str, card_number: str):
+    if request.method == 'POST':
+        cursor = mysql.connection.cursor()
+
+        try:
+            if type_card == 'credit':
+                cursor.execute(
+                    f'SELECT new_loan FROM credit_cards WHERE card_number={card_number}')
+                loan = cursor.fetchall()[0][0]
+                print(loan)
+
+                if loan == 0:
+                    flash('Loan has been already payed!', 'success')
+
+                else:
+                    cursor.execute(f"""
+                      UPDATE {type_card}_cards
+                      SET loan = 0,
+                      new_charges = 0,
+                      new_loan = 0
+                      WHERE card_number = {card_number}
+                    """)
+                    mysql.connection.commit()
+
+                    flash('Payment made successfully!', 'success')
+
+            elif type_card == 'service':
+                cursor.execute(
+                    f'SELECT loan FROM service_cards WHERE card_number={card_number}')
+                loan = cursor.fetchall()[0][0]
+
+                if loan == 0:
+                    flash('Loan has been already payed!', 'success')
+
+                else:
+                    cursor.execute(f"""
+                      UPDATE {type_card}_cards
+                      SET loan = 0
+                      WHERE card_number = {card_number}
+                    """)
+                    mysql.connection.commit()
+
+                    flash('Payment made successfully!', 'success')
+
+        except:
+            flash(
+                'There was an error with the payment. Please try again later.', 'danger')
+
+        return redirect(url_for('get_card', type=type_card, card_number=card_number))
+
+
+@app.route('/pay-partial/credit/<string:card_number>', methods=['POST'])
+def make_partial_payment(card_number: str):
+    if request.method == 'POST':
+        cursor = mysql.connection.cursor()
+
+        try:
+            cursor.execute(
+                f'SELECT payment, new_loan FROM credit_cards WHERE card_number={card_number}')
+            payment, loan = cursor.fetchall()[0]
+
+            if loan == 0:
+                flash('Loan has been already payed!', 'success')
+
+            else:
+                if loan - payment < 0:
+                    updated_loan = 0
+                else:
+                    updated_loan = loan - payment
+
+                cursor.execute(f"""
+                    UPDATE credit_cards
+                    SET new_loan = {updated_loan}
+                    WHERE card_number = {card_number}
+                  """)
+                mysql.connection.commit()
+
+                flash('Payment made successfully!', 'success')
+
+        except:
+            flash(
+                'There was an error with the payment. Please try again later.', 'danger')
+
+        return redirect(url_for('get_card', type='credit', card_number=card_number))
+
+    return "Pay partial"
 
 
 # 404 ERROR

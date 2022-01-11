@@ -1,17 +1,6 @@
 {% extends 'utils/layout.html' %}
 
 {% block body %}
-
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
-<section class="alert">
-  <p class="alert__message success">{{message}}</p>
-</section>
-{% endfor %}
-{% endif %}
-{% endwith %}
-
 <main class="index">
   <section class="users">
     {% if users|length > 0 %}

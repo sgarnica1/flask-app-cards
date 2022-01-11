@@ -73,7 +73,7 @@ body {
 
 .alert__message {
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -125,6 +125,9 @@ body {
 .input__container input::placeholder {
   font-size: var(--main-font);
   color: var(--alternative-font-color);
+}
+.input__container:focus-within {
+  border-color: var(--btn-color-primary);
 }
 
 .input__container .input__currency-sign {
@@ -381,7 +384,8 @@ header {
 }
 
 .single-card .single-card__actions,
-.single-card__actions .single-card__action {
+.single-card__actions .single-card__action,
+.single-card__actions .single-card__actions__form {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -458,8 +462,7 @@ header {
     gap: 20px;
   }
 
-  .single-card.add__container form .input__container:first-of-type,
-  .single-card.add__container form button {
+  .single-card.add__container form .grid-full {
     grid-column: 1 / -1;
   }
 }
