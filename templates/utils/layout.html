@@ -7,6 +7,16 @@
 <!-- HEADER -->
 {% include 'utils/header.html' %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<section class="alert">
+  <p class="alert__message {{category}}">{{message}}</p>
+</section>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
 
 <body>
   {% block body %}

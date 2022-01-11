@@ -66,6 +66,14 @@ class ServiceCard(CreditCard):
         }
 
     def pay(self):
+        """Captures payment and pays total debt (Only accepts total payments)
+
+        Args:
+          None
+
+        Returns:
+          None
+        """
         invalid = True
 
         print(

@@ -41,7 +41,7 @@ class CreditCard:
             CVV: {self.cvv}
             Tipo: {self.type}
             Tasa de interés: {self.interest_rate}%
-                      f"Deuda actual: {self.format_currency(self.loan)}
+            Deuda actual: {self.format_currency(self.loan)}
             Pago mensual: {self.format_currency(self.payment)}
             Cargos adicionales: {self.format_currency(self.new_charges)}
             Deuda actulizada: {self.format_currency(self.new_loan)}
@@ -213,6 +213,17 @@ class CreditCard:
         self.new_loan -= payment
 
         print(f'Deuda actualizada: {self.format_currency(self.new_loan)}\n')
+
+    def make_total_payment(self) -> None:
+        """Pays total loan without asking user for amount to pay
+
+        Args:
+          None
+
+        Returns:
+          None
+        """
+        self.loan = 0
 
     def format_currency(self, money: float) -> str:
         """Formats a float into a string with a currency format
