@@ -9,7 +9,7 @@
   <section class="user-profile__cards">
     <div class="user-profile__cards-container">
       {% for card in cards %}
-      <a href="/{{card['type']}}-card/{{card['card_number']['full']}}" class="user-profile__card-link">
+      <a href="/card/{{card['type']}}/{{card['card_number']['full']}}" class="user-profile__card-link">
         {% include 'utils/card.html' %}
       </a>
       {% endfor %}
@@ -22,12 +22,13 @@
   {% endif %}
 
   <section class="user-profile__actions">
-    <a href="/report/user/{{user['user_id']}}" class="add-card button button-secondary">Generate card reports</a>
-    <a href="/add/user/{{user['user_id']}}/credit-card" class="add-card credit button button-primary">New Credit
+    <a href="/user/report/{{user['user_id']}}" class="add-card button button-secondary">Generate card reports</a>
+    <a href="/card/add/credit-card/user/{{user['user_id']}}" class="add-card credit button button-primary">New Credit
       Card</a>
-    <a href="/add/user/{{user['user_id']}}/service-card" class="add-card service button button-primary">New Service
+    <a href="/card/add/service-card/user/{{user['user_id']}}" class="add-card service button button-primary">New
+      Service
       Card</a>
-    <a href="/delete/user/{{user['user_id']}}" class="add-card button button-danger">Delete User</a>
+    <a href="/user/delete/{{user['user_id']}}" class="add-card button button-danger">Delete User</a>
   </section>
 </section>
 
