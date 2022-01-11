@@ -6,9 +6,9 @@
   </div>
   <section class="single-card add__container">
     {% if card['type'] == "credit" %}
-    <form action="/recalculate-loan/credit/{{card['card_number']['full']}}" method="POST" class="add__form">
+    <form action="/card/recalculate-loan/credit/{{card['card_number']['full']}}" method="POST" class="add__form">
       {% else %}
-      <form action="/pay-total/{{card['type']}}/{{card['card_number']['full']}}" method="POST" class="add__form">
+      <form action="/card/pay-total/{{card['type']}}/{{card['card_number']['full']}}" method="POST" class="add__form">
         {% endif %}
 
         <input value="{{user[0]}}" name="user_id" readonly hidden></option>
@@ -58,22 +58,22 @@
   </div>
 
   <div class="single-card__actions">
-    <a href="/report/{{card['type']}}/{{card['card_number']['full']}}"
+    <a href="/card/report/{{card['type']}}/{{card['card_number']['full']}}"
       class="single-card__action-button button">Generate report</a>
 
     {% if card['type'] == "credit" %}
-    <form action="/pay-partial/{{card['type']}}/{{card['card_number']['full']}}" method="POST"
+    <form action="/card/pay-partial/{{card['type']}}/{{card['card_number']['full']}}" method="POST"
       class="single-card__actions__form">
       <button class="single-card__action-button button">Make partial payment</button>
     </form>
-    <form action="/pay-total/{{card['type']}}/{{card['card_number']['full']}}" method="POST"
+    <form action="/card/pay-total/{{card['type']}}/{{card['card_number']['full']}}" method="POST"
       class="single-card__actions__form">
       <button class="single-card__action-button button">Pay debt</button>
     </form>
     {% endif %}
   </div>
   <div class="single-card__delete">
-    <a href="/delete/{{card['type']}}-card/{{card['card_id']}}" class="button button-danger">Delete card</a>
+    <a href="/card/delete/{{card['type']}}-card/{{card['card_id']}}" class="button button-danger">Delete card</a>
   </div>
 </section>
 
