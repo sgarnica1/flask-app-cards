@@ -234,6 +234,7 @@ class CreditCard:
         Returns:
           str: Money in string formatted into a currency
         """
+
         return "${:,.2f}".format(money)
 
     def create_report(self):
