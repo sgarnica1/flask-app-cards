@@ -1,5 +1,5 @@
 # flask-app-cards
 
-Interest calculator with Python
+Credit and service cards app with flask
 
-Might add a better description later
+View project: https://sgarnica1.pythonanywhere.com/
